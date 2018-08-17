@@ -50,7 +50,7 @@ class State {
     dir : number = 0
 
     update(cb : Function) {
-        this.scale += 0.1 * this.dir
+        this.scale += 0.05 * this.dir
         if (Math.abs(this.scale - this.prevScale) > 1) {
             this.scale = this.prevScale + this.dir
             this.dir = 0
@@ -105,7 +105,7 @@ class RLCNode {
         const gap : number = w / (nodes + 1)
         const factor : number = 1 - 2 * (this.i % 2)
         const sc1 = Math.min(0.5, this.state.scale) * 2
-        const sc2 = Math.min(0.5, Math.max(this.state.scale , 0.5))
+        const sc2 = Math.min(0.5, Math.max(this.state.scale - 0.5 , 0)) * 2
         context.fillStyle = color
         context.strokeStyle = color
         context.lineWidth = Math.min(w, h) / 60
@@ -121,6 +121,9 @@ class RLCNode {
         context.lineTo(0, -gap * factor)
         context.stroke()
         context.restore()
+        if (this.next) {
+            this.next.draw(context)
+        }
     }
 
     update(cb : Function) {
@@ -150,7 +153,7 @@ class LinkedRotLineCircle {
 
     update(cb : Function) {
         this.curr.update(() => {
-            this.curr.getNext(this.dir, () => {
+            this.curr = this.curr.getNext(this.dir, () => {
                 this.dir *= -1
             })
             cb()
