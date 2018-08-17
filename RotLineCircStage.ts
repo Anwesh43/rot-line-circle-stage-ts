@@ -4,7 +4,8 @@ const color : string = '#E65100'
 class RotLineCircStage {
     canvas : HTMLCanvasElement = document.createElement('canvas')
     context : CanvasRenderingContext2D
-
+    lrlc : LinkedRotLineCircle = new LinkedRotLineCircle()
+    animator : Animator = new Animator()
     constructor() {
         this.initCanvas()
         this.render()
@@ -21,11 +22,20 @@ class RotLineCircStage {
     render() {
         this.context.fillStyle = '#212121'
         this.context.fillRect(0, 0, w, h)
+        this.lrlc.draw(this.context)
     }
 
     handleTap() {
         this.canvas.onmousedown = () => {
-
+            this.lrlc.startUpdating(() => {
+                this.animator.start(() => {
+                    this.render()
+                    this.lrlc.update(() => {
+                        this.animator.stop()
+                        this.render()
+                    })
+                })
+            })
         }
     }
 
