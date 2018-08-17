@@ -1,5 +1,6 @@
 const w : number = window.innerWidth, h : number = window.innerHeight
 const nodes : number = 5
+const color : string = '#E65100'
 class RotLineCircStage {
     canvas : HTMLCanvasElement = document.createElement('canvas')
     context : CanvasRenderingContext2D
@@ -72,5 +73,63 @@ class Animator {
             this.animated = false
             clearInterval(this.interval)
         }
+    }
+}
+
+class RLCNode {
+    state : State = new State()
+    prev : RLCNode
+    next : RLCNode
+    constructor(private i : number) {
+        this.addNeighbor()
+    }
+
+    addNeighbor() {
+        if (this.i < nodes - 1) {
+            this.next = new RLCNode(this.i + 1)
+            this.next.prev = this
+        }
+    }
+
+    draw(context : CanvasRenderingContext2D) {
+        const gap : number = w / (nodes + 1)
+        const factor : number = 1 - 2 * (this.i % 2)
+        const sc1 = Math.min(0.5, this.state.scale) * 2
+        const sc2 = Math.min(0.5, Math.max(this.state.scale , 0.5))
+        context.fillStyle = color
+        context.strokeStyle = color
+        context.lineWidth = Math.min(w, h) / 60
+        context.lineCap = 'round'
+        context.save()
+        context.translate(this.i * gap + gap / 2, h/2)
+        context.rotate(Math.PI/2 * sc1 * factor)
+        context.beginPath()
+        context.arc(0, -gap * factor * sc2, gap/5, 0, 2 * Math.PI)
+        context.fill()
+        context.beginPath()
+        context.moveTo(0, -gap * factor * sc2)
+        context.lineTo(0, -gap * factor)
+        context.stroke()
+        context.restore()
+    }
+
+    update(cb : Function) {
+        this.state.update(cb)
+    }
+
+    startUpdating(cb : Function) {
+        this.state.startUpdating(cb)
+    }
+
+    getNext(dir : number, cb : Function) : RLCNode {
+        var curr : RLCNode = this.prev
+        if (dir == 1) {
+            curr = this.next
+        }
+        if (curr) {
+            return curr
+        }
+        cb()
+        return this
     }
 }
